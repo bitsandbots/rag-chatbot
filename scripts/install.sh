@@ -85,14 +85,58 @@ else
     mkdir -p "$DOCS_DIR"
 fi
 
+# --- Install systemd service ---
+SERVICE_SRC="$PROJECT_DIR/services/rag-chatbot.service"
+SERVICE_DST="/etc/systemd/system/rag-chatbot.service"
+
+if [ -f "$SERVICE_DST" ]; then
+    skip "rag-chatbot.service (systemd)"
+else
+    info "Installing systemd service..."
+    # Generate service file with actual paths
+    cat > "$SERVICE_SRC" << EOF
+[Unit]
+Description=RAG Chatbot Flask API
+After=network.target ollama.service
+Wants=ollama.service
+
+[Service]
+Type=simple
+User=$USER
+WorkingDirectory=$PROJECT_DIR
+EnvironmentFile=$PROJECT_DIR/.env
+ExecStart=$PROJECT_DIR/venv/bin/python -m rag_chatbot
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    if [ "$(id -u)" -eq 0 ]; then
+        cp "$SERVICE_SRC" "$SERVICE_DST"
+        systemctl daemon-reload
+        systemctl enable rag-chatbot.service
+        info "Service installed and enabled (run: sudo systemctl start rag-chatbot)"
+    else
+        warn "Not running as root — service file written to $SERVICE_SRC"
+        echo "  Install manually:"
+        echo "    sudo cp $SERVICE_SRC $SERVICE_DST"
+        echo "    sudo systemctl daemon-reload"
+        echo "    sudo systemctl enable --now rag-chatbot"
+    fi
+fi
+
 echo
 echo "============================================"
 echo "  Install complete!"
 echo "============================================"
 echo
-echo "Next steps:"
-echo "  1. Review .env and adjust settings if needed"
-echo "  2. Add documents to documents/ for ingestion"
-echo "  3. Run:  make run"
-echo "  4. Open: http://localhost:5000"
+echo "Quick start:"
+echo "  make run                              # start server"
+echo "  curl http://localhost:5000/health      # health check"
+echo
+echo "Or as a service:"
+echo "  sudo systemctl start rag-chatbot"
+echo "  sudo systemctl status rag-chatbot"
 echo

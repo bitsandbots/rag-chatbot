@@ -1,0 +1,16 @@
+[Unit]
+Description=RAG Chatbot Flask API
+After=network.target ollama.service
+Wants=ollama.service
+
+[Service]
+Type=simple
+User=coreconduit
+WorkingDirectory=/home/coreconduit/rag-chatbot
+EnvironmentFile=/home/coreconduit/rag-chatbot/.env
+ExecStart=/home/coreconduit/rag-chatbot/venv/bin/python -m rag_chatbot
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

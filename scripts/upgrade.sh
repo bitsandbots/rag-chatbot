@@ -381,6 +381,52 @@ WantedBy=multi-user.target
 EOF
 fi
 
+# --- Install systemd services ---
+echo
+info "Installing systemd services..."
+
+install_service() {
+    local src="$1"
+    local name
+    name="$(basename "$src")"
+    local dst="/etc/systemd/system/$name"
+
+    if [ "$(id -u)" -eq 0 ]; then
+        cp "$src" "$dst"
+        info "Installed $name"
+    else
+        warn "Not root — skipping systemd install for $name"
+    fi
+}
+
+# Stop and disable the base service if it exists (upgrading from starter)
+if systemctl is-active --quiet rag-chatbot.service 2>/dev/null; then
+    if [ "$(id -u)" -eq 0 ]; then
+        info "Stopping base rag-chatbot.service (replaced by split services)..."
+        systemctl stop rag-chatbot.service
+        systemctl disable rag-chatbot.service
+        rm -f /etc/systemd/system/rag-chatbot.service
+    else
+        warn "rag-chatbot.service is running — stop it manually before starting split services"
+    fi
+fi
+
+install_service "$API_SERVICE"
+install_service "$WEB_SERVICE"
+
+if [ "$(id -u)" -eq 0 ]; then
+    systemctl daemon-reload
+    systemctl enable ai-stack-api.service ai-stack-web.service
+    info "Services enabled. Start with:"
+    echo "    sudo systemctl start ai-stack-api ai-stack-web"
+else
+    echo
+    warn "Run the following to install services manually:"
+    echo "    sudo cp services/*.service /etc/systemd/system/"
+    echo "    sudo systemctl daemon-reload"
+    echo "    sudo systemctl enable --now ai-stack-api ai-stack-web"
+fi
+
 # --- Git commit ---
 echo
 info "Committing upgrade files..."
@@ -401,10 +447,11 @@ echo "  - src/rag_chatbot/templates/chat.html (Chat UI)"
 echo "  - services/ai-stack-api.service    (systemd for FastAPI)"
 echo "  - services/ai-stack-web.service    (systemd for Flask)"
 echo
-echo "Next steps:"
-echo "  1. Copy services:  sudo cp services/*.service /etc/systemd/system/"
-echo "  2. Reload systemd: sudo systemctl daemon-reload"
-echo "  3. Enable:         sudo systemctl enable --now ai-stack-api ai-stack-web"
-echo "  4. Test:           curl http://localhost:7860/api/health"
-echo "  5. Chat UI:        http://localhost:5000/chat"
+echo "Services:"
+echo "  - ai-stack-api:  FastAPI on port 7860"
+echo "  - ai-stack-web:  Flask + chat UI on port 5000"
+echo
+echo "Test:"
+echo "  curl http://localhost:7860/api/health"
+echo "  open http://localhost:5000/chat"
 echo
