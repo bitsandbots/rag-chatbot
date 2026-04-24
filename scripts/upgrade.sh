@@ -58,12 +58,12 @@ rag = RAGEngine(
 
 
 @app.get("/api/health")
-async def health():
+async def health() -> dict:
     return {"status": "ok", "engine": "local", "mode": "production"}
 
 
 @app.post("/api/ingest")
-async def ingest(request: Request):
+async def ingest(request: Request) -> dict:
     data = await request.json()
     texts = data.get("texts", [])
     ids = data.get("ids")
@@ -72,7 +72,7 @@ async def ingest(request: Request):
 
 
 @app.post("/api/query")
-async def query(request: Request):
+async def query(request: Request) -> dict:
     data = await request.json()
     question = data.get("question")
     if not question:
@@ -82,7 +82,7 @@ async def query(request: Request):
 
 
 @app.post("/api/stream")
-async def stream(request: Request):
+async def stream(request: Request) -> StreamingResponse:
     """SSE endpoint for streaming token-by-token responses."""
     data = await request.json()
     question = data.get("question", "")
