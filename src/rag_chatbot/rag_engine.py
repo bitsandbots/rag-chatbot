@@ -16,6 +16,14 @@ class RAGEngine:
         embed_model: str = "nomic-embed-text",
         gen_model: str = "qwen2.5-coder:3b",
     ) -> None:
+        """Initialize the RAG engine with ChromaDB and Ollama.
+
+        Args:
+            collection_name: Name of the ChromaDB collection.
+            chroma_path: Path to persist ChromaDB data.
+            embed_model: Ollama embedding model name.
+            gen_model: Ollama generation model name.
+        """
         self.embed_model = embed_model
         self.gen_model = gen_model
         self.client = chromadb.PersistentClient(path=chroma_path)
