@@ -1,10 +1,10 @@
 """Entrypoint for python -m rag_chatbot."""
 
-from rag_chatbot.api_server import create_app
-
 import os
 
 from dotenv import load_dotenv
+
+from rag_chatbot.api_server import create_app
 
 load_dotenv()
 
