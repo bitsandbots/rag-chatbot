@@ -1,2 +1,2 @@
-# rag-chatbot-
+# rag-chatbot
 RAG Chatbot Starter Stack
