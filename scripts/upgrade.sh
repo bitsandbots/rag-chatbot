@@ -136,7 +136,7 @@ def load_pdf(
         chunk_size: Maximum characters per chunk.
 
     Returns:
-        Tuple of (chunks, ids) where ids are "{filename}_p{page}_{offset}".
+        Tuple of (chunks, ids) where ids are "{filename}_{offset}".
     """
     chunks: list[str] = []
     ids: list[str] = []
