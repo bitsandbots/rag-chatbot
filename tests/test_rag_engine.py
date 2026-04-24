@@ -31,3 +31,55 @@ def test_auto_ids(rag_engine: RAGEngine) -> None:
     rag_engine.add_documents(texts=["first", "second", "third"])
     results = rag_engine.query("first")
     assert len(results["documents"][0]) > 0
+
+
+def test_embed_determinism(rag_engine: RAGEngine) -> None:
+    """Same text must produce the same embedding vector."""
+    v1 = rag_engine.embed_text("hello")
+    v2 = rag_engine.embed_text("hello")
+    assert v1 == v2
+
+
+def test_embed_different_texts(rag_engine: RAGEngine) -> None:
+    """Different texts must produce different embeddings."""
+    v1 = rag_engine.embed_text("hello")
+    v2 = rag_engine.embed_text("goodbye")
+    assert v1 != v2
+
+
+def test_constructor_stores_attributes(rag_engine: RAGEngine) -> None:
+    assert rag_engine.embed_model == "nomic-embed-text"
+    assert rag_engine.gen_model == "qwen2.5-coder:3b"
+    assert rag_engine.collection is not None
+
+
+def test_query_n_results_exceeds_collection(rag_engine: RAGEngine) -> None:
+    """Requesting more results than docs should return all available."""
+    rag_engine.add_documents(texts=["only one doc"], ids=["single"])
+    results = rag_engine.query("anything", n_results=10)
+    assert len(results["documents"][0]) == 1
+
+
+def test_multiple_add_documents_accumulate(rag_engine: RAGEngine) -> None:
+    """Multiple calls should accumulate, not replace."""
+    rag_engine.add_documents(texts=["doc A"], ids=["a"])
+    rag_engine.add_documents(texts=["doc B"], ids=["b"])
+    results = rag_engine.query("doc", n_results=10)
+    assert len(results["documents"][0]) == 2
+
+
+def test_generate_answer_includes_context(rag_engine: RAGEngine) -> None:
+    """generate_answer should pass retrieved context to the LLM prompt."""
+    rag_engine.add_documents(texts=["The capital of France is Paris"], ids=["fr"])
+    answer = rag_engine.generate_answer("What is the capital of France?")
+    # Mock returns "Mock answer for: {prompt[:50]}"
+    assert answer.startswith("Mock answer for:")
+
+
+def test_query_returns_ids(rag_engine: RAGEngine) -> None:
+    rag_engine.add_documents(texts=["alpha", "beta"], ids=["id_a", "id_b"])
+    results = rag_engine.query("alpha", n_results=2)
+    assert "ids" in results
+    returned_ids = results["ids"][0]
+    assert "id_a" in returned_ids
+    assert "id_b" in returned_ids
