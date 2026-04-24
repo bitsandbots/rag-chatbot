@@ -3,7 +3,9 @@ from __future__ import annotations
 import hashlib
 
 import pytest
+from flask.testing import FlaskClient
 
+from rag_chatbot.api_server import create_app
 from rag_chatbot.rag_engine import RAGEngine
 
 
@@ -39,3 +41,11 @@ def rag_engine(tmp_path) -> RAGEngine:
         embed_model="nomic-embed-text",
         gen_model="qwen2.5-coder:3b",
     )
+
+
+@pytest.fixture()
+def client(rag_engine: RAGEngine) -> FlaskClient:
+    """Flask test client wired to a test RAGEngine."""
+    app = create_app(rag=rag_engine)
+    app.config["TESTING"] = True
+    return app.test_client()
