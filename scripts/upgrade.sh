@@ -1,6 +1,26 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# ╔══════════════════════════════════════════════════════════════╗
+# ║  DEPRECATION NOTICE                                         ║
+# ║                                                              ║
+# ║  This upgrade script is kept for educational purposes —      ║
+# ║  it demonstrates how to extend the starter stack with        ║
+# ║  FastAPI, chat history, and a web UI.                        ║
+# ║                                                              ║
+# ║  For production use, deploy CoreChat instead:                ║
+# ║  https://github.com/coreconduit/corechat                    ║
+# ║                                                              ║
+# ║  CoreChat includes everything this script generates,         ║
+# ║  plus: hybrid retrieval, multi-language support,             ║
+# ║  a polished Flask UI, Docker, and systemd services.          ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+echo ""
+echo "NOTE: This script is for learning purposes."
+echo "  For production, use CoreChat: https://github.com/coreconduit/corechat"
+echo ""
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 SRC_DIR="$PROJECT_DIR/src/rag_chatbot"
