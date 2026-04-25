@@ -14,7 +14,7 @@ class RAGEngine:
         collection_name: str = "documents",
         chroma_path: str = "./chroma_db",
         embed_model: str = "nomic-embed-text",
-        gen_model: str = "qwen2.5-coder:3b",
+        gen_model: str = "qwen3:1.7b",
     ) -> None:
         """Initialize the RAG engine with ChromaDB and Ollama.
 

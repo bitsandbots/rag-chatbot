@@ -54,7 +54,7 @@ def test_api_ingest_multiple_then_query(client: FlaskClient) -> None:
     data = resp.get_json()
     assert "answer" in data
     assert data["question"] == "What stores embeddings?"
-    assert data["model"] == "qwen2.5-coder:3b"
+    assert data["model"] == "qwen3:1.7b"
 
 
 def test_chunked_file_ingestion_via_api(client: FlaskClient, tmp_path: Path) -> None:

@@ -53,7 +53,7 @@ rag = RAGEngine(
     collection_name=os.getenv("COLLECTION_NAME", "documents"),
     chroma_path=os.getenv("CHROMA_PATH", "./chroma_db"),
     embed_model=os.getenv("EMBED_MODEL", "nomic-embed-text"),
-    gen_model=os.getenv("MODEL", "qwen2.5-coder:3b"),
+    gen_model=os.getenv("MODEL", "qwen3:1.7b"),
 )
 
 

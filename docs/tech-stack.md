@@ -8,7 +8,7 @@
 | Storage | 32GB microSD or USB SSD | 16GB microSD |
 | OS | Raspberry Pi OS 64-bit | Ubuntu Server 24.04 LTS |
 
-Models and ChromaDB require significant RAM. The 4GB Pi 4 is workable with a small model (`qwen2.5-coder:3b`) but will be slow on large corpora. The 8GB Pi 5 is the recommended target.
+Models and ChromaDB require significant RAM. The 4GB Pi 4 is workable with a small model (`qwen3:1.7b`) but will be slow on large corpora. The 8GB Pi 5 is the recommended target.
 
 ## Runtime Dependencies
 
@@ -46,7 +46,7 @@ Installed by `scripts/upgrade.sh` via `pip install -e ".[upgrade]"`:
 | Model | Role | Pull command |
 |---|---|---|
 | `nomic-embed-text` | Embeddings (768-dim) | `ollama pull nomic-embed-text` |
-| `qwen2.5-coder:3b` | Text generation | `ollama pull qwen2.5-coder:3b` |
+| `qwen3:1.7b` | Text generation | `ollama pull qwen3:1.7b` |
 
 Both models are configured via `.env` and can be swapped for any Ollama-compatible model.
 

@@ -50,8 +50,8 @@ fi
 info "Pulling nomic-embed-text..."
 ollama pull nomic-embed-text
 
-info "Pulling qwen2.5-coder:3b..."
-ollama pull qwen2.5-coder:3b
+info "Pulling qwen3:1.7b..."
+ollama pull qwen3:1.7b
 
 # --- Create virtualenv ---
 VENV="$PROJECT_DIR/venv"

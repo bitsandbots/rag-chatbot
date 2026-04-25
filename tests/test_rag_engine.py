@@ -49,7 +49,7 @@ def test_embed_different_texts(rag_engine: RAGEngine) -> None:
 
 def test_constructor_stores_attributes(rag_engine: RAGEngine) -> None:
     assert rag_engine.embed_model == "nomic-embed-text"
-    assert rag_engine.gen_model == "qwen2.5-coder:3b"
+    assert rag_engine.gen_model == "qwen3:1.7b"
     assert rag_engine.collection is not None
 
 

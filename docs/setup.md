@@ -20,7 +20,7 @@ ollama list
 
 ```bash
 ollama pull nomic-embed-text
-ollama pull qwen2.5-coder:3b
+ollama pull qwen3:1.7b
 ```
 
 Both pulls require network access. After that, all inference is local.
@@ -48,7 +48,7 @@ Default `.env.example` values:
 ```
 PORT=5000
 OLLAMA_HOST=http://localhost:11434
-MODEL=qwen2.5-coder:3b
+MODEL=qwen3:1.7b
 EMBED_MODEL=nomic-embed-text
 CHROMA_PATH=./chroma_db
 COLLECTION_NAME=documents
@@ -107,7 +107,7 @@ Expected response:
 ```json
 {
   "answer": "...",
-  "model": "qwen2.5-coder:3b",
+  "model": "qwen3:1.7b",
   "question": "How much RAM does the Raspberry Pi 5 have?"
 }
 ```

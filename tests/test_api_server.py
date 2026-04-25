@@ -79,7 +79,7 @@ def test_query_returns_model_name(client: FlaskClient) -> None:
     client.post("/ingest", json={"texts": ["test data"], "ids": ["t0"]})
     resp = client.post("/query", json={"question": "test?"})
     data = resp.get_json()
-    assert data["model"] == "qwen2.5-coder:3b"
+    assert data["model"] == "qwen3:1.7b"
 
 
 def test_ingest_then_query_roundtrip(client: FlaskClient) -> None:

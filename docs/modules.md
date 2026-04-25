@@ -15,7 +15,7 @@ class RAGEngine:
         collection_name: str = "documents",
         chroma_path: str = "./chroma_db",
         embed_model: str = "nomic-embed-text",
-        gen_model: str = "qwen2.5-coder:3b",
+        gen_model: str = "qwen3:1.7b",
     ) -> None: ...
 ```
 
@@ -28,7 +28,7 @@ Creates a `chromadb.PersistentClient` at `chroma_path` and gets or creates a col
 | `collection_name` | `"documents"` | ChromaDB collection name |
 | `chroma_path` | `"./chroma_db"` | Directory for persisted ChromaDB data |
 | `embed_model` | `"nomic-embed-text"` | Ollama model for generating embeddings |
-| `gen_model` | `"qwen2.5-coder:3b"` | Ollama model for text generation |
+| `gen_model` | `"qwen3:1.7b"` | Ollama model for text generation |
 
 **Methods**
 

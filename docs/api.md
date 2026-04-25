@@ -74,7 +74,7 @@ Run the full RAG pipeline: embed the question, retrieve relevant chunks, generat
 ```json
 {
   "answer": "The Raspberry Pi 5 has a quad-core ARM Cortex-A76 CPU.",
-  "model": "qwen2.5-coder:3b",
+  "model": "qwen3:1.7b",
   "question": "What CPU does the Raspberry Pi 5 use?"
 }
 ```

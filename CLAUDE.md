@@ -9,7 +9,7 @@ RAG Chatbot Starter Stack — a self-hosted, offline-first retrieval-augmented g
 ## Stack
 
 - Python 3.13, Flask (web UI), FastAPI (API backend)
-- Ollama for local LLM inference (qwen2.5-coder, llama3)
+- Ollama for local LLM inference (qwen3, llama3)
 - nomic-embed-text for embeddings
 - ChromaDB for vector storage
 - SQLite for metadata/session persistence

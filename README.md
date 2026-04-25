@@ -6,7 +6,7 @@ A self-hosted, offline-first RAG (Retrieval-Augmented Generation) chatbot stack 
 
 ## Stack
 
-- **Ollama** — Local LLM inference (qwen2.5-coder, llama3, phi3)
+- **Ollama** — Local LLM inference (qwen3, llama3, phi3)
 - **ChromaDB** — Vector database for semantic search
 - **Flask** — API server with health, ingest, and query endpoints
 - **nomic-embed-text** — Local embedding model
@@ -16,7 +16,7 @@ A self-hosted, offline-first RAG (Retrieval-Augmented Generation) chatbot stack 
 ```bash
 # Prerequisites: Ollama installed with nomic-embed-text pulled
 ollama pull nomic-embed-text
-ollama pull qwen2.5-coder:3b
+ollama pull qwen3:1.7b
 
 # Clone and install
 git clone https://github.com/bitsandbots/rag-chatbot.git

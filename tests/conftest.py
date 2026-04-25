@@ -39,7 +39,7 @@ def rag_engine(tmp_path) -> RAGEngine:
         collection_name="test_docs",
         chroma_path=str(tmp_path / "chroma"),
         embed_model="nomic-embed-text",
-        gen_model="qwen2.5-coder:3b",
+        gen_model="qwen3:1.7b",
     )
 
 
