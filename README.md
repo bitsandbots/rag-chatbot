@@ -66,6 +66,19 @@ bash scripts/upgrade.sh
 - 64GB+ microSD or USB SSD
 - Active cooling
 
+## Ready for Production?
+
+This starter stack is designed for learning and demos. When you're ready for a production deployment, check out **[CoreChat](https://github.com/coreconduit/corechat)** — the full-featured evolution of this project.
+
+CoreChat adds:
+- **Polished Flask UI** with dashboard, document management, and model selector
+- **Hybrid retrieval** (BM25 + vector fusion) for better search quality
+- **Multi-language prompts** with configurable system prompt templates
+- **Docker & systemd** deployment with resource limits for Pi 5
+- **Pluggable backend** — choose between full LlamaIndex engine or lightweight direct-Ollama mode
+
+Your documents are compatible — same `nomic-embed-text` embeddings and ChromaDB storage. No re-ingestion needed when you migrate.
+
 ## License
 
 MIT
