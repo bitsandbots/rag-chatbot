@@ -127,6 +127,26 @@ Answer:"""
                 yield f"data: {json.dumps({'token': token})}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+
+@app.get("/api/documents")
+async def list_documents() -> dict:
+    docs = rag.list_documents()
+    return {"documents": docs, "count": len(docs)}
+
+
+@app.delete("/api/documents")
+async def delete_documents(request: Request) -> dict:
+    from fastapi import HTTPException
+
+    data = await request.json()
+    ids = data.get("ids")
+    if not isinstance(ids, list) or not ids:
+        raise HTTPException(status_code=400, detail="ids must be a non-empty list of strings")
+    if not all(isinstance(i, str) for i in ids):
+        raise HTTPException(status_code=400, detail="ids must be a non-empty list of strings")
+    deleted = rag.delete_documents(ids)
+    return {"deleted": deleted}
 PYEOF
 fi
 

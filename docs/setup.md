@@ -66,6 +66,23 @@ This runs `venv/bin/python -m rag_chatbot`, which loads `.env` and starts Flask 
 
 The server binds to `0.0.0.0` so it is reachable from other devices on the local network.
 
+### Running as a systemd Service
+
+A pre-built service file is included at `services/rag-chatbot.service`. To install it:
+
+```bash
+sudo cp services/rag-chatbot.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now rag-chatbot
+```
+
+Verify it is running:
+
+```bash
+systemctl status rag-chatbot
+curl http://localhost:5000/health
+```
+
 ## Testing the API
 
 ### Health check

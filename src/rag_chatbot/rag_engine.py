@@ -95,3 +95,27 @@ Answer:"""
 
         response = ollama.generate(model=self.gen_model, prompt=prompt)
         return response["response"]
+
+    def list_documents(self) -> list[dict]:
+        """List all documents indexed in the collection.
+
+        Returns:
+            List of dicts with 'id' and 'text' keys.
+        """
+        result = self.collection.get(include=["documents"])
+        return [
+            {"id": id_, "text": doc}
+            for id_, doc in zip(result["ids"], result["documents"])
+        ]
+
+    def delete_documents(self, ids: list[str]) -> int:
+        """Delete documents from the collection by ID.
+
+        Args:
+            ids: List of document IDs to delete.
+
+        Returns:
+            Number of IDs submitted for deletion.
+        """
+        self.collection.delete(ids=ids)
+        return len(ids)

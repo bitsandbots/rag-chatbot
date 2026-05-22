@@ -59,6 +59,62 @@ curl -s -X POST http://localhost:5000/ingest \
 
 ---
 
+### GET /documents
+
+List all documents currently indexed in ChromaDB.
+
+**Response**
+
+```json
+{
+  "documents": [
+    {"id": "pi5-cpu", "text": "The Raspberry Pi 5 features a 2.4GHz quad-core..."},
+    {"id": "ollama-offline", "text": "Ollama supports running models offline..."}
+  ],
+  "count": 2
+}
+```
+
+**Status codes**: `200 OK`
+
+**curl**
+
+```bash
+curl http://localhost:5000/documents
+```
+
+---
+
+### DELETE /documents
+
+Remove documents from the index by ID.
+
+**Request body**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `ids` | `string[]` | Yes | List of document IDs to delete |
+
+**Response**
+
+```json
+{"deleted": 2}
+```
+
+`deleted` is the count of IDs submitted for deletion.
+
+**Status codes**: `200 OK`, `400 Bad Request` (missing or invalid `ids`)
+
+**curl**
+
+```bash
+curl -s -X DELETE http://localhost:5000/documents \
+  -H "Content-Type: application/json" \
+  -d '{"ids": ["pi5-cpu", "ollama-offline"]}'
+```
+
+---
+
 ### POST /query
 
 Run the full RAG pipeline: embed the question, retrieve relevant chunks, generate an answer.
@@ -128,6 +184,18 @@ Same request/response contract as `POST /ingest` above.
 curl -s -X POST http://localhost:7860/api/ingest \
   -H "Content-Type: application/json" \
   -d '{"texts": ["..."]}'
+```
+
+---
+
+### POST /api/query
+
+Non-streaming RAG query. Same request/response contract as `POST /query` above.
+
+```bash
+curl -s -X POST http://localhost:7860/api/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What CPU does the Raspberry Pi 5 use?"}'
 ```
 
 ---
