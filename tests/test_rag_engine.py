@@ -83,3 +83,36 @@ def test_query_returns_ids(rag_engine: RAGEngine) -> None:
     returned_ids = results["ids"][0]
     assert "id_a" in returned_ids
     assert "id_b" in returned_ids
+
+
+def test_list_documents_empty(rag_engine: RAGEngine) -> None:
+    docs = rag_engine.list_documents()
+    assert docs == []
+
+
+def test_list_documents_after_ingest(rag_engine: RAGEngine) -> None:
+    rag_engine.add_documents(texts=["hello", "world"], ids=["h", "w"])
+    docs = rag_engine.list_documents()
+    assert len(docs) == 2
+    ids = {d["id"] for d in docs}
+    texts = {d["text"] for d in docs}
+    assert ids == {"h", "w"}
+    assert texts == {"hello", "world"}
+
+
+def test_delete_documents(rag_engine: RAGEngine) -> None:
+    rag_engine.add_documents(texts=["keep", "remove"], ids=["k", "r"])
+    deleted = rag_engine.delete_documents(["r"])
+    assert deleted == 1
+    docs = rag_engine.list_documents()
+    assert len(docs) == 1
+    assert docs[0]["id"] == "k"
+
+
+def test_delete_multiple_documents(rag_engine: RAGEngine) -> None:
+    rag_engine.add_documents(texts=["a", "b", "c"], ids=["a", "b", "c"])
+    deleted = rag_engine.delete_documents(["a", "c"])
+    assert deleted == 2
+    docs = rag_engine.list_documents()
+    assert len(docs) == 1
+    assert docs[0]["id"] == "b"

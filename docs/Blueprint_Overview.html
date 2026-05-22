@@ -206,7 +206,7 @@ footer code { background: transparent; padding: 0; color: var(--text-muted); }
     <span class="brand-name">RAG<span class="highlight">Bot</span></span>
   </div>
   <div class="topbar-meta">
-    System Blueprint <span>v1.0 · 2026-05-21</span>
+    System Blueprint <span>v1.1 · 2026-05-21</span>
   </div>
 </header>
 
@@ -438,6 +438,18 @@ footer code { background: transparent; padding: 0; color: var(--text-muted); }
           </tr>
           <tr>
             <td class="method-get">GET</td>
+            <td><code>/documents</code></td>
+            <td>—</td>
+            <td><code>{"documents": [{"id","text"},...], "count": N}</code></td>
+          </tr>
+          <tr>
+            <td class="method-post" style="color:var(--danger);font-weight:700;font-family:'IBM Plex Mono',monospace;font-size:12px">DEL</td>
+            <td><code>/documents</code></td>
+            <td><code>{"ids": [...]}</code> — returns 400 if missing or invalid</td>
+            <td><code>{"deleted": N}</code></td>
+          </tr>
+          <tr>
+            <td class="method-get">GET</td>
             <td><code>/chat</code> <span style="color:var(--orange);font-size:11px">(upgrade)</span></td>
             <td>—</td>
             <td>Browser chat UI (served from <code>templates/chat.html</code>)</td>
@@ -642,50 +654,50 @@ footer code { background: transparent; padding: 0; color: var(--text-muted); }
     <div class="card-body">
 
       <div class="gap-item">
-        <span class="gap-tag tag-missing">Missing</span>
+        <span class="gap-tag tag-oos">Fixed</span>
         <div class="gap-detail">
-          <strong>No document list or delete API</strong>
-          <span>Once documents are ingested into ChromaDB, there is no API endpoint to list what's indexed, remove individual documents, or clear the collection. Users cannot inspect or manage the index via HTTP — only by deleting <code>./chroma_db/</code> on disk.</span>
+          <strong>Document list and delete API — added</strong>
+          <span><code>GET /documents</code> returns all indexed documents with id and text. <code>DELETE /documents</code> accepts <code>{"ids": [...]}</code> and removes documents from ChromaDB. Both endpoints include input validation. <code>RAGEngine</code> gained <code>list_documents()</code> and <code>delete_documents()</code> methods.</span>
         </div>
       </div>
 
       <div class="gap-item">
-        <span class="gap-tag tag-missing">Missing</span>
+        <span class="gap-tag tag-oos">Fixed</span>
         <div class="gap-detail">
-          <strong>No CLI entry point in pyproject.toml</strong>
-          <span>The package exposes no installed command. Users must run <code>python -m rag_chatbot</code> or <code>make run</code>. Adding a <code>[project.scripts]</code> entry (<code>rag-chatbot = "rag_chatbot.__main__:main"</code>) would allow <code>rag-chatbot</code> as a shell command after install.</span>
+          <strong>CLI entry point — added</strong>
+          <span><code>pyproject.toml</code> now declares <code>rag-chatbot = "rag_chatbot.__main__:main"</code> under <code>[project.scripts]</code>. After <code>make install</code>, <code>rag-chatbot</code> is available as a shell command. <code>__main__.py</code> exposes a <code>main()</code> function callable by both <code>python -m rag_chatbot</code> and the CLI entry point.</span>
         </div>
       </div>
 
       <div class="gap-item">
-        <span class="gap-tag tag-partial">Partial</span>
+        <span class="gap-tag tag-oos">Fixed</span>
         <div class="gap-detail">
-          <strong>FastAPI /api/query endpoint undocumented in api.md</strong>
-          <span>The upgrade script generates <code>POST /api/query</code> in <code>fastapi_app.py</code>, but <code>docs/api.md</code> does not list it. Only <code>/api/health</code>, <code>/api/ingest</code>, and <code>/api/stream</code> are documented for the FastAPI stack.</span>
+          <strong>FastAPI /api/query documented — added</strong>
+          <span><code>docs/api.md</code> now includes <code>POST /api/query</code> in the After Upgrade section.</span>
         </div>
       </div>
 
       <div class="gap-item">
-        <span class="gap-tag tag-partial">Partial</span>
+        <span class="gap-tag tag-oos">Fixed</span>
         <div class="gap-detail">
-          <strong>services/rag-chatbot.service undocumented</strong>
-          <span>A pre-built systemd service for the starter Flask server exists at <code>services/rag-chatbot.service</code> and is referenced by <code>scripts/install.sh</code>, but setup.md only documents the upgrade-script-generated services (<code>ai-stack-api.service</code>, <code>ai-stack-web.service</code>). The starter service install path is not mentioned.</span>
+          <strong>services/rag-chatbot.service — documented</strong>
+          <span><code>docs/setup.md</code> now includes a "Running as a systemd Service" section with the install commands for the starter service file.</span>
         </div>
       </div>
 
       <div class="gap-item">
-        <span class="gap-tag tag-partial">Partial</span>
+        <span class="gap-tag tag-oos">Fixed</span>
         <div class="gap-detail">
-          <strong>No input validation on /ingest</strong>
-          <span><code>POST /ingest</code> does not validate that <code>texts</code> is a non-empty list of strings. Passing <code>null</code>, a plain string, or a malformed body will raise an unhandled exception. Only <code>/query</code> returns a clean 400 error on bad input.</span>
+          <strong>Input validation on /ingest — added</strong>
+          <span><code>POST /ingest</code> now validates that <code>texts</code> is a non-empty list of strings and that <code>ids</code> (if provided) matches the length of <code>texts</code>. Returns 400 with a clear error message on bad input. A malformed or missing body also returns 400.</span>
         </div>
       </div>
 
       <div class="gap-item">
-        <span class="gap-tag tag-design">Design</span>
+        <span class="gap-tag tag-oos">Fixed</span>
         <div class="gap-detail">
-          <strong>No chunk overlap / stride in document_loader</strong>
-          <span>Text is split into non-overlapping fixed-size character chunks. Context at chunk boundaries may be split mid-sentence, degrading retrieval quality. A <code>stride</code> parameter (e.g., 50-char overlap) would reduce boundary loss. Noted as a known limitation of the starter stack.</span>
+          <strong>Chunk stride/overlap — added</strong>
+          <span><code>load_text_files()</code> now accepts an optional <code>stride</code> parameter. Default <code>None</code> preserves the original non-overlapping behavior (<code>stride = chunk_size</code>). Setting <code>stride &lt; chunk_size</code> produces overlapping chunks that preserve context across boundaries.</span>
         </div>
       </div>
 

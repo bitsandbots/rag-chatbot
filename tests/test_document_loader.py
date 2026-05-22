@@ -85,3 +85,39 @@ def test_multiple_files_with_chunking(tmp_path: Path) -> None:
     assert len(chunks[0]) == 500
     assert len(chunks[1]) == 100
     assert len(chunks[2]) == 300
+
+
+def test_stride_produces_overlapping_chunks(tmp_path: Path) -> None:
+    """stride < chunk_size causes chunks to overlap."""
+    text = "A" * 600
+    (tmp_path / "overlap.txt").write_text(text)
+    # chunk_size=500, stride=400 → starts at 0, 400; both are 500 chars wide
+    chunks, ids = load_text_files(str(tmp_path), chunk_size=500, stride=400)
+    assert len(chunks) == 2
+    assert len(chunks[0]) == 500  # chars 0..499
+    assert len(chunks[1]) == 200  # chars 400..599 (only 200 remain)
+    assert ids[0] == "overlap.txt_0"
+    assert ids[1] == "overlap.txt_400"
+
+
+def test_stride_default_no_overlap(tmp_path: Path) -> None:
+    """stride=None (default) behaves identically to stride=chunk_size."""
+    text = "X" * 1000
+    (tmp_path / "t.txt").write_text(text)
+    chunks_default, ids_default = load_text_files(str(tmp_path), chunk_size=500)
+    chunks_explicit, ids_explicit = load_text_files(
+        str(tmp_path), chunk_size=500, stride=500
+    )
+    assert chunks_default == chunks_explicit
+    assert ids_default == ids_explicit
+
+
+def test_stride_equal_one(tmp_path: Path) -> None:
+    """stride=1 produces a sliding window of chunks."""
+    (tmp_path / "s.txt").write_text("abcde")
+    chunks, ids = load_text_files(str(tmp_path), chunk_size=3, stride=1)
+    # Starts: 0,1,2; chunks: abc, bcd, cde, de, e  → 5 chunks
+    assert chunks[0] == "abc"
+    assert chunks[1] == "bcd"
+    assert chunks[2] == "cde"
+    assert len(chunks) == 5

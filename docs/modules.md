@@ -56,6 +56,18 @@ def generate_answer(self, question: str) -> str: ...
 
 Full pipeline: calls `self.query(question)`, assembles a prompt with the top-3 context chunks, and calls `ollama.generate()`. Returns the generated answer string.
 
+```python
+def list_documents(self) -> list[dict]: ...
+```
+
+Returns all documents in the collection as a list of `{"id": str, "text": str}` dicts. Returns an empty list if the collection is empty.
+
+```python
+def delete_documents(self, ids: list[str]) -> int: ...
+```
+
+Deletes documents by ID from the ChromaDB collection. Returns the count of IDs submitted for deletion.
+
 **Usage**
 
 ```python
@@ -77,11 +89,11 @@ Reads `.txt` files from a directory and splits them into fixed-size character ch
 
 ```python
 def load_text_files(
-    directory: str, chunk_size: int = 500
+    directory: str, chunk_size: int = 500, stride: int | None = None
 ) -> tuple[list[str], list[str]]: ...
 ```
 
-Iterates over all `*.txt` files in `directory` (sorted). Each file is read in full and split into non-overlapping character chunks of at most `chunk_size` characters. IDs are formatted as `{filename}_{offset}`, e.g. `guide.txt_0`, `guide.txt_500`.
+Iterates over all `*.txt` files in `directory` (sorted). Each file is read in full and split into character chunks of at most `chunk_size` characters. IDs are formatted as `{filename}_{offset}`, e.g. `guide.txt_0`, `guide.txt_500`.
 
 **Parameters**
 
@@ -89,6 +101,7 @@ Iterates over all `*.txt` files in `directory` (sorted). Each file is read in fu
 |---|---|---|
 | `directory` | — | Path to directory containing `.txt` files |
 | `chunk_size` | `500` | Maximum characters per chunk |
+| `stride` | `None` | Step between chunk start positions. Defaults to `chunk_size` (no overlap). Set `stride < chunk_size` for overlapping chunks that preserve context at boundaries. |
 
 **Returns**: `(chunks, ids)` — two parallel lists ready to pass to `RAGEngine.add_documents()`.
 
