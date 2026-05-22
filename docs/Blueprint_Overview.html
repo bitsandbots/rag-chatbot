@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAG Chatbot — System Blueprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:      #0f1a2e;
+  --navy-dark: #0b1220;
+  --blue:      #2b7de9;
+  --blue-dark: #1b6ad4;
+  --orange:    #e07018;
+  --silver-100:#eaecf0;
+  --silver-300:#bfc4cc;
+  --silver-500:#969daa;
+  --silver-700:#636a76;
+  --silver-900:#3a404a;
+  --bg:        #c5c9d0;
+  --bg-card:   #d8dbe1;
+  --bg-elev:   #e2e5ea;
+  --text:      #1e232b;
+  --text-muted:#4d545f;
+  --border:    #a8adb6;
+  --success:   #1a9a4a;
+  --warn:      #c08a15;
+  --danger:    #c0391b;
+  --grad:      linear-gradient(90deg, var(--blue) 0%, var(--orange) 100%);
+  --radius:    6px;
+  --shadow:    0 2px 8px rgba(15,26,46,.12);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: var(--bg); color: var(--text);
+  font-size: 14px; line-height: 1.6;
+}
+.topbar {
+  background: var(--navy); padding: 0 24px; height: 52px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,.35);
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-mark {
+  width: 32px; height: 32px; background: var(--blue); border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Exo 2', sans-serif; font-weight: 800; font-size: 13px;
+  color: #fff; letter-spacing: -.5px;
+}
+.brand-name {
+  font-family: 'Exo 2', sans-serif; font-weight: 700; font-size: 17px;
+  color: #eaecf0; letter-spacing: .2px;
+}
+.brand-name .highlight { color: var(--orange); }
+.topbar-meta {
+  font-size: 12px; color: var(--silver-500);
+  font-family: 'IBM Plex Mono', monospace;
+}
+.topbar-meta span { color: var(--silver-300); margin-left: 12px; }
+
+.page { max-width: 1140px; margin: 0 auto; padding: 32px 24px 64px; }
+
+.hero {
+  background: var(--navy); color: var(--silver-100);
+  border-radius: var(--radius); padding: 32px 36px; margin-bottom: 32px;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 3px; background: var(--grad);
+}
+.hero h1 {
+  font-family: 'Exo 2', sans-serif; font-size: 28px; font-weight: 800;
+  color: #fff; margin-bottom: 8px;
+}
+.hero h1 .accent { color: var(--orange); }
+.hero p { color: var(--silver-300); max-width: 760px; margin-bottom: 6px; }
+.hero-badges {
+  margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap;
+}
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
+}
+.badge-blue  { background: rgba(43,125,233,.2);  color: #6bb3ff; border: 1px solid rgba(43,125,233,.3); }
+.badge-green { background: rgba(26,154,74,.1);   color: #2ecc71; border: 1px solid rgba(26,154,74,.3); }
+.badge-gray  { background: rgba(150,157,170,.15);color: var(--silver-300); border: 1px solid rgba(150,157,170,.25); }
+.badge-orange{ background: rgba(224,112,24,.15); color: #ffa05c; border: 1px solid rgba(224,112,24,.25); }
+.badge-warn  { background: rgba(192,138,21,.15); color: #f5c842; border: 1px solid rgba(192,138,21,.3); }
+
+.section { margin-bottom: 36px; }
+.section-title {
+  font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--silver-700); margin-bottom: 14px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--border);
+}
+
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+}
+.card-top { height: 3px; background: var(--grad); }
+.card-body { padding: 18px 20px; }
+.card-title {
+  font-family: 'Exo 2', sans-serif; font-weight: 700;
+  font-size: 14px; color: var(--text); margin-bottom: 6px;
+}
+.card-desc { font-size: 13px; color: var(--text-muted); }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+.arch-stack { display: flex; flex-direction: column; gap: 4px; }
+.arch-layer {
+  background: var(--bg-elev); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 18px;
+}
+.arch-layer-label {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--blue); margin-bottom: 8px;
+}
+.arch-layer-content { display: flex; gap: 8px; flex-wrap: wrap; }
+.arch-box {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 4px; padding: 5px 10px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  color: var(--text);
+}
+.arch-box.accent { border-color: var(--blue); color: var(--blue); }
+.arch-box.orange { border-color: var(--orange); color: var(--orange); }
+.arch-box.green  { border-color: var(--success); color: var(--success); }
+.arch-arrow {
+  text-align: center; color: var(--silver-500); font-size: 14px;
+  padding: 2px 0;
+}
+
+.pipelines { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+thead th {
+  background: var(--bg-elev); color: var(--text);
+  padding: 8px 12px; text-align: left; font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+tbody td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tbody tr:last-child td { border-bottom: 0; }
+code {
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  background: var(--bg-elev); padding: 1px 6px; border-radius: 3px;
+  color: var(--navy);
+}
+
+.method-get    { color: var(--success); font-weight: 700; font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+.method-post   { color: var(--blue);    font-weight: 700; font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+
+.kv-list { display: grid; grid-template-columns: 220px 1fr; gap: 6px 16px; font-size: 13px; }
+.kv-list dt { color: var(--text-muted); font-weight: 600; }
+.kv-list dd { color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+
+.gap-item {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.gap-item:last-child { border-bottom: 0; }
+.gap-tag {
+  flex-shrink: 0; padding: 2px 8px; border-radius: 4px;
+  font-size: 11px; font-weight: 700; font-family: 'IBM Plex Mono', monospace;
+  text-transform: uppercase;
+}
+.tag-missing  { background: rgba(192,57,27,.15); color: #e74c3c; border: 1px solid rgba(192,57,27,.3); }
+.tag-partial  { background: rgba(192,138,21,.15); color: #f5c842; border: 1px solid rgba(192,138,21,.3); }
+.tag-design   { background: rgba(150,157,170,.15); color: var(--silver-500); border: 1px solid rgba(150,157,170,.25); }
+.tag-oos      { background: rgba(26,154,74,.1);   color: #2ecc71; border: 1px solid rgba(26,154,74,.3); }
+
+.gap-detail strong { color: var(--text); font-weight: 600; display: block; margin-bottom: 2px; }
+.gap-detail span { color: var(--text-muted); font-size: 12px; }
+
+.section-label {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--orange); margin: 16px 0 8px;
+}
+
+footer {
+  margin-top: 48px; padding-top: 16px;
+  border-top: 1px solid var(--border);
+  color: var(--silver-700); font-size: 12px; text-align: center;
+}
+footer code { background: transparent; padding: 0; color: var(--text-muted); }
+
+@media (max-width: 768px) {
+  .grid-2, .grid-3, .pipelines { grid-template-columns: 1fr; }
+  .kv-list { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">
+    <div class="logo-mark">CC</div>
+    <span class="brand-name">RAG<span class="highlight">Bot</span></span>
+  </div>
+  <div class="topbar-meta">
+    System Blueprint <span>v1.0 · 2026-05-21</span>
+  </div>
+</header>
+
+<div class="page">
+
+<!-- ─────── Hero ─────── -->
+<div class="hero">
+  <h1>System <span class="accent">Blueprint</span></h1>
+  <p>A self-hosted, offline-first Retrieval-Augmented Generation chatbot starter stack for Raspberry Pi. Combines ChromaDB vector search with Ollama local inference — no cloud dependencies, all data on device.</p>
+  <p>Supporting source code for the <a href="https://coreconduit.com/techlounge/guides/offline-first-ai-stack.html" style="color:#6bb3ff">Offline-First AI Stack guide</a>. Clone-and-run starter with optional upgrade to a dual-process production architecture.</p>
+  <div class="hero-badges">
+    <span class="badge badge-blue">Python 3.13 · Flask · FastAPI</span>
+    <span class="badge badge-green">43 Tests Passing</span>
+    <span class="badge badge-gray">ChromaDB · Ollama · nomic-embed-text</span>
+    <span class="badge badge-orange">Raspberry Pi 5 Native</span>
+    <span class="badge badge-gray">MIT License</span>
+  </div>
+</div>
+
+<!-- ─────── System Architecture ─────── -->
+<div class="section">
+  <div class="section-title">System Architecture</div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-top"></div>
+    <div class="card-body">
+      <div class="arch-stack">
+        <div class="arch-layer">
+          <div class="arch-layer-label">HTTP Layer — Flask (port 5000)</div>
+          <div class="arch-layer-content">
+            <span class="arch-box accent">GET /health</span>
+            <span class="arch-box accent">POST /ingest</span>
+            <span class="arch-box accent">POST /query</span>
+            <span class="arch-box">create_app() factory pattern</span>
+            <span class="arch-box">Injectable RAGEngine (testable without Ollama)</span>
+          </div>
+        </div>
+        <div class="arch-arrow">▼</div>
+        <div class="arch-layer">
+          <div class="arch-layer-label">RAG Engine (rag_engine.py)</div>
+          <div class="arch-layer-content">
+            <span class="arch-box accent">embed_text() → ollama.embed</span>
+            <span class="arch-box accent">add_documents() → ChromaDB.add</span>
+            <span class="arch-box accent">query() → ChromaDB.query</span>
+            <span class="arch-box accent">generate_answer() → prompt assembly → ollama.generate</span>
+          </div>
+        </div>
+        <div class="arch-arrow">▼</div>
+        <div class="arch-layer">
+          <div class="arch-layer-label">Inference — Ollama (localhost:11434)</div>
+          <div class="arch-layer-content">
+            <span class="arch-box orange">nomic-embed-text (768-dim embeddings)</span>
+            <span class="arch-box orange">qwen3:1.7b (text generation)</span>
+            <span class="arch-box">All models run locally — zero cloud calls</span>
+          </div>
+        </div>
+        <div class="arch-arrow">▼</div>
+        <div class="arch-layer">
+          <div class="arch-layer-label">Persistent State</div>
+          <div class="arch-layer-content">
+            <span class="arch-box">ChromaDB at ./chroma_db/ (cosine similarity, hnsw index)</span>
+            <span class="arch-box green">SQLite chat.db (after upgrade — sessions + messages)</span>
+          </div>
+        </div>
+        <div class="arch-arrow">▼</div>
+        <div class="arch-layer">
+          <div class="arch-layer-label">Deployment</div>
+          <div class="arch-layer-content">
+            <span class="arch-box orange">systemd · rag-chatbot.service</span>
+            <span class="arch-box">Raspberry Pi 5 (8GB recommended) / Pi 4 (4GB min)</span>
+            <span class="arch-box">python -m rag_chatbot · binds 0.0.0.0:5000</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pipelines">
+    <div class="card">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <div class="card-title">Ingestion Pipeline</div>
+        <div class="arch-stack" style="margin-top:10px">
+          <div class="arch-layer">
+            <div class="arch-layer-label">Input</div>
+            <div class="arch-layer-content">
+              <span class="arch-box">.txt files on disk</span>
+              <span class="arch-box">or POST /ingest body</span>
+            </div>
+          </div>
+          <div class="arch-arrow">▼</div>
+          <div class="arch-layer">
+            <div class="arch-layer-label">Chunking</div>
+            <div class="arch-layer-content">
+              <span class="arch-box accent">load_text_files(dir, chunk_size=500)</span>
+              <span class="arch-box">non-overlapping char chunks</span>
+              <span class="arch-box">ids: filename_offset</span>
+            </div>
+          </div>
+          <div class="arch-arrow">▼</div>
+          <div class="arch-layer">
+            <div class="arch-layer-label">Embed + Store</div>
+            <div class="arch-layer-content">
+              <span class="arch-box accent">ollama.embed(nomic-embed-text)</span>
+              <span class="arch-box">ChromaDB.collection.add</span>
+              <span class="arch-box">persisted to ./chroma_db/</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <div class="card-title">Query Pipeline</div>
+        <div class="arch-stack" style="margin-top:10px">
+          <div class="arch-layer">
+            <div class="arch-layer-label">Input</div>
+            <div class="arch-layer-content">
+              <span class="arch-box">POST /query {"question": "..."}</span>
+            </div>
+          </div>
+          <div class="arch-arrow">▼</div>
+          <div class="arch-layer">
+            <div class="arch-layer-label">Retrieve</div>
+            <div class="arch-layer-content">
+              <span class="arch-box accent">embed question → 768-dim vector</span>
+              <span class="arch-box">ChromaDB cosine search → top 3 chunks</span>
+            </div>
+          </div>
+          <div class="arch-arrow">▼</div>
+          <div class="arch-layer">
+            <div class="arch-layer-label">Generate</div>
+            <div class="arch-layer-content">
+              <span class="arch-box accent">prompt: context + question</span>
+              <span class="arch-box">ollama.generate(qwen3:1.7b)</span>
+              <span class="arch-box">→ {question, answer, model}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────── Modules ─────── -->
+<div class="section">
+  <div class="section-title">Module Reference</div>
+  <div class="card">
+    <div class="card-top"></div>
+    <div class="card-body">
+      <table>
+        <thead>
+          <tr><th>Module</th><th>Exports</th><th>Responsibility</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>rag_engine.py</code></td>
+            <td><code>RAGEngine</code></td>
+            <td>Owns ChromaDB client and collection. Wraps <code>ollama.embed</code> and <code>ollama.generate</code>. Config-agnostic — all settings injected via constructor. Methods: <code>embed_text</code>, <code>add_documents</code>, <code>query</code>, <code>generate_answer</code>.</td>
+          </tr>
+          <tr>
+            <td><code>document_loader.py</code></td>
+            <td><code>load_text_files()</code></td>
+            <td>Globs <code>*.txt</code> from a directory (sorted). Splits each file into non-overlapping character chunks of <code>chunk_size</code> (default 500). Returns <code>(chunks, ids)</code> where ids are <code>filename_offset</code>.</td>
+          </tr>
+          <tr>
+            <td><code>api_server.py</code></td>
+            <td><code>create_app()</code></td>
+            <td>Flask application factory. Accepts optional <code>RAGEngine</code> — if <code>None</code>, constructs one from env vars. Registers <code>GET /health</code>, <code>POST /ingest</code>, <code>POST /query</code>.</td>
+          </tr>
+          <tr>
+            <td><code>__main__.py</code></td>
+            <td>—</td>
+            <td>Entry point for <code>python -m rag_chatbot</code>. Loads <code>.env</code>, creates app via factory, starts Flask on <code>PORT</code> (default 5000) bound to <code>0.0.0.0</code>.</td>
+          </tr>
+          <tr>
+            <td><code>fastapi_app.py</code> <span style="color:var(--orange);font-size:11px">(upgrade)</span></td>
+            <td><code>app</code> (FastAPI)</td>
+            <td>Production async backend on port 7860. Routes: <code>GET /api/health</code>, <code>POST /api/ingest</code>, <code>POST /api/query</code>, <code>POST /api/stream</code> (SSE). Constructs its own RAGEngine from env.</td>
+          </tr>
+          <tr>
+            <td><code>pdf_loader.py</code> <span style="color:var(--orange);font-size:11px">(upgrade)</span></td>
+            <td><code>load_pdf()</code></td>
+            <td>PDF ingestion via <code>pymupdf</code>. Extracts text from all pages, chunks by character count. Same <code>(chunks, ids)</code> return format as <code>load_text_files</code>.</td>
+          </tr>
+          <tr>
+            <td><code>chat_history.py</code> <span style="color:var(--orange);font-size:11px">(upgrade)</span></td>
+            <td><code>ChatHistory</code></td>
+            <td>SQLite-backed chat session storage. Two tables: <code>sessions</code> (id, created_at) and <code>messages</code> (id, session_id, role CHECK IN ('user','assistant'), content, created_at). Methods: <code>create_session</code>, <code>add_message</code>, <code>get_messages</code>.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─────── API ─────── -->
+<div class="section">
+  <div class="section-title">REST API Surface</div>
+
+  <div class="section-label">Starter Stack — Flask :5000</div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-top"></div>
+    <div class="card-body">
+      <table>
+        <thead>
+          <tr><th style="width:60px">Method</th><th style="width:160px">Path</th><th>Request</th><th>Response</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="method-get">GET</td>
+            <td><code>/health</code></td>
+            <td>—</td>
+            <td><code>{"status": "ok", "engine": "local"}</code></td>
+          </tr>
+          <tr>
+            <td class="method-post">POST</td>
+            <td><code>/ingest</code></td>
+            <td><code>{"texts": [...], "ids": [...]}</code> — <code>ids</code> optional; auto-assigned as <code>doc_N</code></td>
+            <td><code>{"indexed": N}</code></td>
+          </tr>
+          <tr>
+            <td class="method-post">POST</td>
+            <td><code>/query</code></td>
+            <td><code>{"question": "..."}</code> — returns 400 if missing</td>
+            <td><code>{"question", "answer", "model"}</code></td>
+          </tr>
+          <tr>
+            <td class="method-get">GET</td>
+            <td><code>/chat</code> <span style="color:var(--orange);font-size:11px">(upgrade)</span></td>
+            <td>—</td>
+            <td>Browser chat UI (served from <code>templates/chat.html</code>)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-label">Production Stack — FastAPI :7860 (added by upgrade.sh)</div>
+  <div class="card">
+    <div class="card-top"></div>
+    <div class="card-body">
+      <table>
+        <thead>
+          <tr><th style="width:60px">Method</th><th style="width:180px">Path</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="method-get">GET</td>
+            <td><code>/api/health</code></td>
+            <td>Returns <code>{"status":"ok","engine":"local","mode":"production"}</code></td>
+          </tr>
+          <tr>
+            <td class="method-post">POST</td>
+            <td><code>/api/ingest</code></td>
+            <td>Same contract as <code>POST /ingest</code> above</td>
+          </tr>
+          <tr>
+            <td class="method-post">POST</td>
+            <td><code>/api/query</code></td>
+            <td>Non-streaming RAG query — same contract as <code>POST /query</code></td>
+          </tr>
+          <tr>
+            <td class="method-post">POST</td>
+            <td><code>/api/stream</code></td>
+            <td>SSE streaming. Each event: <code>data: {"token": "..."}</code>, final: <code>data: {"done": true}</code>. Content-Type: <code>text/event-stream</code>.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─────── Tech Stack ─────── -->
+<div class="section">
+  <div class="section-title">Tech Stack</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <div class="card-title">Runtime Dependencies</div>
+        <table style="margin-top:10px">
+          <thead><tr><th>Package</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code>chromadb</code></td><td>Vector store, persisted to disk</td></tr>
+            <tr><td><code>ollama</code></td><td>Python client for local Ollama inference</td></tr>
+            <tr><td><code>flask</code></td><td>HTTP API and web server</td></tr>
+            <tr><td><code>python-dotenv</code></td><td>Loads .env at startup</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <div class="card-title">Ollama Models</div>
+        <table style="margin-top:10px">
+          <thead><tr><th>Model</th><th>Role</th></tr></thead>
+          <tbody>
+            <tr><td><code>nomic-embed-text</code></td><td>768-dim embeddings for semantic search</td></tr>
+            <tr><td><code>qwen3:1.7b</code></td><td>Text generation (default); swappable via MODEL env</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;font-size:12px;color:var(--text-muted)">
+          Both models are configured via <code>.env</code> and can be swapped for any Ollama-compatible model.
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <div class="card-title">Environment Variables</div>
+        <table style="margin-top:10px">
+          <thead><tr><th>Variable</th><th>Default</th></tr></thead>
+          <tbody>
+            <tr><td><code>PORT</code></td><td>5000</td></tr>
+            <tr><td><code>OLLAMA_HOST</code></td><td>http://localhost:11434</td></tr>
+            <tr><td><code>MODEL</code></td><td>qwen3:1.7b</td></tr>
+            <tr><td><code>EMBED_MODEL</code></td><td>nomic-embed-text</td></tr>
+            <tr><td><code>CHROMA_PATH</code></td><td>./chroma_db</td></tr>
+            <tr><td><code>COLLECTION_NAME</code></td><td>documents</td></tr>
+            <tr><td><code>API_PORT</code> <span style="color:var(--orange)">↑</span></td><td>7860</td></tr>
+            <tr><td><code>DB_PATH</code> <span style="color:var(--orange)">↑</span></td><td>./chat.db</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:8px;font-size:11px;color:var(--orange)">↑ added by upgrade.sh</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <div class="card-title">Upgrade Dependencies</div>
+        <table style="margin-top:10px">
+          <thead><tr><th>Package</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code>fastapi</code></td><td>Async API backend on port 7860</td></tr>
+            <tr><td><code>uvicorn[standard]</code></td><td>ASGI server for FastAPI</td></tr>
+            <tr><td><code>pymupdf</code></td><td>PDF text extraction for pdf_loader.py</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;font-size:12px;color:var(--text-muted)">
+          Installed via <code>pip install -e ".[upgrade]"</code> or automatically by <code>scripts/upgrade.sh</code>.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────── Upgrade Path ─────── -->
+<div class="section">
+  <div class="section-title">Upgrade Path</div>
+  <div class="card">
+    <div class="card-top"></div>
+    <div class="card-body">
+      <p style="margin-bottom:14px;font-size:13px;color:var(--text-muted)">
+        <code>bash scripts/upgrade.sh</code> extends the starter stack to a dual-process production architecture. The script is idempotent — safe to re-run. It checks for existing files before writing and commits the changes.
+      </p>
+      <table>
+        <thead><tr><th>File Added</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>src/rag_chatbot/fastapi_app.py</code></td><td>FastAPI backend with SSE streaming on port 7860</td></tr>
+          <tr><td><code>src/rag_chatbot/pdf_loader.py</code></td><td>PDF ingestion via pymupdf</td></tr>
+          <tr><td><code>src/rag_chatbot/chat_history.py</code></td><td>SQLite-backed chat session and message storage</td></tr>
+          <tr><td><code>src/rag_chatbot/templates/chat.html</code></td><td>Browser chat UI connecting to <code>POST /query</code></td></tr>
+          <tr><td><code>services/ai-stack-api.service</code></td><td>systemd unit for FastAPI backend</td></tr>
+          <tr><td><code>services/ai-stack-web.service</code></td><td>systemd unit for Flask web UI</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px;font-size:13px;color:var(--text-muted)">
+        <strong style="color:var(--text)">Post-upgrade:</strong>
+        <code style="display:block;margin:6px 0">sudo cp services/*.service /etc/systemd/system/</code>
+        <code style="display:block;margin:6px 0">sudo systemctl daemon-reload && sudo systemctl enable --now ai-stack-api ai-stack-web</code>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────── Quality ─────── -->
+<div class="section">
+  <div class="section-title">Quality &amp; Test Coverage</div>
+  <div class="card">
+    <div class="card-top"></div>
+    <div class="card-body">
+      <dl class="kv-list">
+        <dt>Total tests</dt><dd>43 / 43 passing (pytest)</dd>
+        <dt>test_rag_engine.py</dt><dd>embed_text · add_and_query · generate_answer · auto_ids</dd>
+        <dt>test_document_loader.py</dt><dd>load_text_files · chunking boundaries · empty directory</dd>
+        <dt>test_api_server.py</dt><dd>GET /health · POST /ingest · POST /query · 400 on missing question</dd>
+        <dt>test_integration.py</dt><dd>full load→ingest→query pipeline · multi-doc API round trip · chunked file ingestion · empty collection</dd>
+        <dt>test_upgrade_script.py</dt><dd>script exists + executable · bash -n syntax · idempotency guards · embedded Python syntax validity</dd>
+        <dt>Mock strategy</dt><dd>ollama.embed and ollama.generate monkeypatched — deterministic SHA-256 768-dim vectors; no live Ollama needed</dd>
+        <dt>ChromaDB in tests</dt><dd>tmp_path per test session — isolated, no shared state</dd>
+        <dt>Lint</dt><dd>ruff (E, F, I, N, W rule sets · Python 3.11 target · 88 char line length)</dd>
+        <dt>Format</dt><dd>ruff format</dd>
+        <dt>CI</dt><dd>not configured — make test runs suite locally</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<!-- ─────── Repository Layout ─────── -->
+<div class="section">
+  <div class="section-title">Repository Layout</div>
+  <div class="card">
+    <div class="card-top"></div>
+    <div class="card-body">
+      <dl class="kv-list">
+        <dt><code>src/rag_chatbot/</code></dt><dd>Core Python package — rag_engine, document_loader, api_server, __main__</dd>
+        <dt><code>tests/</code></dt><dd>5 test modules + conftest (ollama mocks, RAGEngine + Flask client fixtures)</dd>
+        <dt><code>scripts/upgrade.sh</code></dt><dd>Idempotent production upgrade — adds FastAPI, PDF, chat history, systemd</dd>
+        <dt><code>scripts/install.sh</code></dt><dd>One-shot installer (venv setup, systemd enable)</dd>
+        <dt><code>scripts/release.sh</code></dt><dd>Release packaging script</dd>
+        <dt><code>services/rag-chatbot.service</code></dt><dd>Pre-built systemd unit for the starter Flask server</dd>
+        <dt><code>documents/.gitkeep</code></dt><dd>Default directory for .txt files to ingest</dd>
+        <dt><code>pyproject.toml</code></dt><dd>Package metadata, deps, ruff + pytest config — build backend: hatchling</dd>
+        <dt><code>Makefile</code></dt><dd>install · run · test · lint · format · clean</dd>
+        <dt><code>.env.example</code></dt><dd>Documented defaults for all env vars</dd>
+        <dt><code>docs/</code></dt><dd>Blueprint_Overview.html · api.md · architecture.md · modules.md · overview.md · setup.md · tech-stack.md</dd>
+        <dt><code>README.md</code></dt><dd>User-facing quick-start with API examples and upgrade path</dd>
+        <dt><code>CLAUDE.md</code></dt><dd>Project-specific Claude Code guidance</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<!-- ─────── Gap Analysis ─────── -->
+<div class="section">
+  <div class="section-title">Gap Analysis</div>
+  <div class="card">
+    <div class="card-top"></div>
+    <div class="card-body">
+
+      <div class="gap-item">
+        <span class="gap-tag tag-missing">Missing</span>
+        <div class="gap-detail">
+          <strong>No document list or delete API</strong>
+          <span>Once documents are ingested into ChromaDB, there is no API endpoint to list what's indexed, remove individual documents, or clear the collection. Users cannot inspect or manage the index via HTTP — only by deleting <code>./chroma_db/</code> on disk.</span>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <span class="gap-tag tag-missing">Missing</span>
+        <div class="gap-detail">
+          <strong>No CLI entry point in pyproject.toml</strong>
+          <span>The package exposes no installed command. Users must run <code>python -m rag_chatbot</code> or <code>make run</code>. Adding a <code>[project.scripts]</code> entry (<code>rag-chatbot = "rag_chatbot.__main__:main"</code>) would allow <code>rag-chatbot</code> as a shell command after install.</span>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <span class="gap-tag tag-partial">Partial</span>
+        <div class="gap-detail">
+          <strong>FastAPI /api/query endpoint undocumented in api.md</strong>
+          <span>The upgrade script generates <code>POST /api/query</code> in <code>fastapi_app.py</code>, but <code>docs/api.md</code> does not list it. Only <code>/api/health</code>, <code>/api/ingest</code>, and <code>/api/stream</code> are documented for the FastAPI stack.</span>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <span class="gap-tag tag-partial">Partial</span>
+        <div class="gap-detail">
+          <strong>services/rag-chatbot.service undocumented</strong>
+          <span>A pre-built systemd service for the starter Flask server exists at <code>services/rag-chatbot.service</code> and is referenced by <code>scripts/install.sh</code>, but setup.md only documents the upgrade-script-generated services (<code>ai-stack-api.service</code>, <code>ai-stack-web.service</code>). The starter service install path is not mentioned.</span>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <span class="gap-tag tag-partial">Partial</span>
+        <div class="gap-detail">
+          <strong>No input validation on /ingest</strong>
+          <span><code>POST /ingest</code> does not validate that <code>texts</code> is a non-empty list of strings. Passing <code>null</code>, a plain string, or a malformed body will raise an unhandled exception. Only <code>/query</code> returns a clean 400 error on bad input.</span>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <span class="gap-tag tag-design">Design</span>
+        <div class="gap-detail">
+          <strong>No chunk overlap / stride in document_loader</strong>
+          <span>Text is split into non-overlapping fixed-size character chunks. Context at chunk boundaries may be split mid-sentence, degrading retrieval quality. A <code>stride</code> parameter (e.g., 50-char overlap) would reduce boundary loss. Noted as a known limitation of the starter stack.</span>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <span class="gap-tag tag-design">Design</span>
+        <div class="gap-detail">
+          <strong>OLLAMA_HOST env var not explicitly wired in RAGEngine</strong>
+          <span>The <code>.env.example</code> documents <code>OLLAMA_HOST</code> and the <code>ollama</code> Python library auto-detects it from the environment. However, <code>RAGEngine.__init__</code> does not read or validate it. This works implicitly but makes the dependency invisible; a failed Ollama connection surfaces only at first embed/generate call, not at startup.</span>
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <span class="gap-tag tag-oos">Out of Scope</span>
+        <div class="gap-detail">
+          <strong>Authentication, multi-user, Docker, CI/CD</strong>
+          <span>Intentionally out of scope per the design spec. The server binds to <code>0.0.0.0</code> with no auth — suitable for local/LAN use only. For production multi-user deployments, see <a href="https://github.com/coreconduit/corechat" style="color:var(--blue)">CoreChat</a>.</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ─────── Frontend Review ─────── -->
+<div class="section">
+  <div class="section-title">Frontend Review</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <div class="card-title">Starter Stack — No UI</div>
+        <div class="card-desc">The base Flask server is a pure JSON API. No HTML is served. All interaction is via <code>curl</code> or API client. This is intentional — the starter stack is designed as a backend building block, not a user-facing product.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <div class="card-title">After Upgrade — Chat UI</div>
+        <div class="card-desc">
+          <code>templates/chat.html</code> is added by <code>upgrade.sh</code> and served at <code>GET /chat</code>. CoreConduit brand v2.1 Silver styling (navy background, blue/orange accents, IBM Plex Mono). Vanilla JS — no framework, no bundler.<br><br>
+          <strong>Limitations:</strong> Connects to <code>POST /query</code> (blocking, not SSE). Does not use the FastAPI streaming endpoint. No session management, no message persistence in the UI (chat history is stored server-side but not displayed on reload).
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  CoreConduit Consulting Services · MIT-licensed · Built for Raspberry Pi · <code>bitsandbots/rag-chatbot</code>
+</footer>
+
+</div>
+</body>
+</html>

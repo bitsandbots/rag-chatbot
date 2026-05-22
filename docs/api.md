@@ -132,6 +132,18 @@ curl -s -X POST http://localhost:7860/api/ingest \
 
 ---
 
+### POST /api/query
+
+Non-streaming RAG query. Same request/response contract as `POST /query` above.
+
+```bash
+curl -s -X POST http://localhost:7860/api/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What CPU does the Raspberry Pi 5 use?"}'
+```
+
+---
+
 ### POST /api/stream
 
 Streaming token-by-token response via Server-Sent Events (SSE).
