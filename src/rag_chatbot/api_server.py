@@ -74,4 +74,9 @@ def create_app(rag: RAGEngine | None = None) -> Flask:
         deleted = rag.delete_documents(ids)
         return jsonify({"deleted": deleted})
 
+    @app.route("/chat", methods=["GET"])
+    def chat():
+        from flask import render_template
+        return render_template("chat.html")
+
     return app

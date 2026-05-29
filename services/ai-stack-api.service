@@ -1,0 +1,14 @@
+[Unit]
+Description=RAG Chatbot FastAPI Backend
+After=network.target ollama.service
+
+[Service]
+Type=simple
+User=coreconduit
+WorkingDirectory=/home/coreconduit/rag-chatbot
+EnvironmentFile=/home/coreconduit/rag-chatbot/.env
+ExecStart=/home/coreconduit/rag-chatbot/venv/bin/uvicorn rag_chatbot.fastapi_app:app --host 0.0.0.0 --port 7860
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
