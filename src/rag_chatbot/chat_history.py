@@ -48,7 +48,8 @@ class ChatHistory:
         now = datetime.now(timezone.utc).isoformat()
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
-                "INSERT INTO messages (session_id, role, content, created_at) VALUES (?, ?, ?, ?)",
+                "INSERT INTO messages (session_id, role, content, created_at) "
+                "VALUES (?, ?, ?, ?)",
                 (session_id, role, content, now),
             )
 
@@ -57,7 +58,8 @@ class ChatHistory:
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             rows = conn.execute(
-                "SELECT role, content, created_at FROM messages WHERE session_id = ? ORDER BY id",
+                "SELECT role, content, created_at FROM messages "
+                "WHERE session_id = ? ORDER BY id",
                 (session_id,),
             ).fetchall()
         return [dict(row) for row in rows]

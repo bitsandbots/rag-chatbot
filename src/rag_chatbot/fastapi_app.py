@@ -5,10 +5,9 @@ from __future__ import annotations
 import json
 import os
 
+import ollama as ollama_client
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
-
-import ollama as ollama_client
 
 from rag_chatbot.rag_engine import RAGEngine
 
@@ -86,9 +85,10 @@ async def delete_documents(request: Request) -> dict:
 
     data = await request.json()
     ids = data.get("ids")
+    detail = "ids must be a non-empty list of strings"
     if not isinstance(ids, list) or not ids:
-        raise HTTPException(status_code=400, detail="ids must be a non-empty list of strings")
+        raise HTTPException(status_code=400, detail=detail)
     if not all(isinstance(i, str) for i in ids):
-        raise HTTPException(status_code=400, detail="ids must be a non-empty list of strings")
+        raise HTTPException(status_code=400, detail=detail)
     deleted = rag.delete_documents(ids)
     return {"deleted": deleted}
