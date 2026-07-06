@@ -214,3 +214,7 @@ chroma_db/
 
 # SQLite databases (runtime data)
 *.db
+
+# Node (verify-chat-ui skill helper)
+node_modules/
+.claude/skills/verify-chat-ui/scripts/*.png
