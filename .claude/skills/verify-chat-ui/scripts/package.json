@@ -1,0 +1,8 @@
+{
+  "name": "verify-chat-ui",
+  "private": true,
+  "description": "Headless-browser driver for the verify-chat-ui skill",
+  "dependencies": {
+    "playwright-core": "^1.61.1"
+  }
+}
